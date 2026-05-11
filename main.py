@@ -1,10 +1,11 @@
+import math
 import numpy as np
 import matplotlib.pyplot as plt
 from numba import njit, prange
 
 @njit(inline="always") # данный декоратор используется для увеличения скорости работы алгоритма
 def ae_steps_counter(a: int, b: int) -> int: # функция ae_steps_counter проводит подсчёт шагов Алгоритма Евклида для двух целых чисел
-    steps =0
+    steps = 0
     while b!=0:
         a,b = b,a%b
         steps += 1
@@ -21,7 +22,7 @@ def avg_ae_steps_counter(n: int, samples=5000000) -> float: # функция avg
 
 def run_visualization(): # функция run_visualisation выполняет визуализацию графика T(n) от ln(n) с помощью библиотеки pyplot
     theoretical_slope = (12 * np.log(2)) / (np.pi ** 2) # в переменную помещается теоретическое значение углового коэффициента при ln(n) по т. Хайльбронна-Диксона
-    n_values = sorted([n * 10 ** i for n in [1, 5] for i in range(3,7)]) # в данный массив помещаются растущие n от 10^3 до 5*10^7
+    n_values = sorted([n * 10 ** i for n in [1, 5] for i in range(3,8)]) # в данный массив помещаются растущие n от 10^3 до 5*10^7
     average_steps = [avg_ae_steps_counter(n) for n in n_values] # в массиве average_steps находятся соответствующие n_values значения среднего количества шагов алгоритма Евклида
     ln_n = np.log(np.array(n_values)) # просчитываются соответствующие n_values значения ln(n)
     average_steps = np.array(average_steps) # average_steps преобразуется в numpy массив для ускорения работы программы
@@ -45,8 +46,9 @@ def main_menu(): # функция main_menu исполняет роль глав
         print("=" * 30)
         print("1. Рассчитать среднее для конкретного n") # данные элементы являются декоративными
         print("2. Построить график (сравнение с теорией)")
-        print("3. Выход")
-        choice = input("\nВыберите действие (1-3): ") # в переменной choice находится номер опции, выбранной пользователем
+        print("3. Построить график остаточного члена о(1)")
+        print("4. Выход")
+        choice = input("\nВыберите действие (1-4): ") # в переменной choice находится номер опции, выбранной пользователем
         if choice == '1': # в данном блоке находится подсчёт среднего количества шагов алгоритма Евклида
             try: # блок try используется для обработки ошибок
                 user_n = int(input("Введите n: ")) # переменная получает на вход n от пользователя
@@ -65,7 +67,35 @@ def main_menu(): # функция main_menu исполняет роль глав
         elif choice == '2': # в данном блоке находится визуализация графика T(n) от ln(n) для экспериментального значения
             print("\nГенерация графика... Пожалуйста, подождите.")
             run_visualization()
-        elif choice == '3': # в данном блоке обрабатывается конец работы программы
+        elif choice == "3": # в данном блоке просчитывается практическое значение C, далее просчитывается о(1) и строится график
+            print("\nПроверка гипотезы Портера. Пожалуйста, подождите...")
+            pi = np.pi
+            ln2 = np.log(2)         # в данные переменные помещаются различные математическое постоянные
+            gamma = 0.5772156649015328  # Постоянная Эйлера-Маскерони
+            zeta_prime_2 = -0.93754825431
+            C_Riman = (6 * ln2 / pi ** 2) * (3 * ln2 + 4 * gamma - (24 / pi ** 2) * zeta_prime_2 - 2) - 0.5 # просчитывается значение C с помощью производной дзета-функции Римана            n_values = [10 ** i for i in range(3, 10)]
+            theoretical_slope = (12 * ln2) / (pi ** 2)
+            C_Experimental = [] # объявляется массив с экспериментальными C
+            ErrorArray = [] # объявляется массив остаточных членов o(1)
+
+            for n in n_values:
+                avg_steps = avg_ae_steps_counter(n, samples=5_000_000) # для каждого n из n_values просчитывается экспериментальное С остаточноый и о(1)
+                c_exp = avg_steps - theoretical_slope * np.log(n)
+                C_Experimental.append(c_exp)
+                ErrorArray.append(c_exp - C_Riman)
+
+            plt.figure(figsize=(10, 6))
+            plt.plot(n_values, ErrorArray, 'o-', label='C_exp - C_theory')
+            plt.axhline(y=0, color='r', linestyle='--', label='Теоретический предел (0)')
+            plt.xscale('log')
+            plt.xlabel('n (логарифмическая шкала)')
+            plt.ylabel('Отклонение от константы Портера')       # по аналогии с опцией 2 строится график остаточных членов о(1)
+            plt.title('Проверка гипотезы Портера: сходимость остаточного члена к нулю')
+            plt.grid(True, which="both", ls="-", alpha=0.5)
+            plt.legend()
+            plt.show()
+            print(f"\nТеоретическая константа Портера (C_theory): {C_Riman:.10f}")
+        elif choice == '4': # в данном блоке обрабатывается конец работы программы
             print("Программа завершена.")
             break
         else:
