@@ -37,7 +37,7 @@ def run_visualization_without_monte():
     ln_n = np.log(np.array(n_values))  # перевод n в натуральный логарифм для регрессии
     slope, intercept = np.polyfit(ln_n, average_steps, 1)  # расчет коэф. линейной регрессии
     theoretical_steps = theoretical_slope * ln_n + 0.3543382667   # расчет прямой по теории
-    # theory_val = theoretical_slope * ln_n  # теория без подгонки intercept
+    # theory_val = theoretical_slope * ln_n + 0.3543382667  # теория без подгонки intercept
     # print(f"\n{'№':<4} {'n':<12} {'T(n) эксп.':<14} {'T(n) теор.':<14} {'Абс. погр.':<14} {'Отн. погр.'}")
     # print("-" * 70)
     # for i, (n, exp, theor) in enumerate(zip(n_values, average_steps, theory_val), 1):
@@ -69,7 +69,7 @@ def run_visualization():
     ln_n = np.log(np.array(n_values))  # перевод n в натуральный логарифм для регрессии
     slope, intercept = np.polyfit(ln_n, average_steps, 1)  # расчет коэф. линейной регрессии
     theoretical_steps = theoretical_slope * ln_n + 0.3543382667   # расчет прямой по теории
-    # theory_val = theoretical_slope * ln_n  # теория без подгонки intercept
+    # theory_val = theoretical_slope * ln_n + 0.3543382667  # теория без подгонки intercept
     # print(f"\n{'№':<4} {'n':<12} {'T(n) эксп.':<14} {'T(n) теор.':<14} {'Абс. погр.':<14} {'Отн. погр.'}")
     # print("-" * 70)
     # for i, (n, exp, theor) in enumerate(zip(n_values, average_steps, theory_val), 1):
@@ -101,7 +101,7 @@ def main_menu(): # функция main_menu исполняет роль глав
         print("   АНАЛИЗ АЛГОРИТМА ЕВКЛИДА")
         print("=" * 30)
         print("1. Рассчитать среднее для конкретного n") # данные элементы являются декоративными
-        print("2. Построить график T(n) от ln(n) (с использованием метода Монте-Карло")
+        print("2. Построить график T(n) от ln(n) (с использованием метода Монте-Карло)")
         print("3. Построить график T(n) от ln(n) (с использованием метода полного перебора)")
         print("4. Построить график остаточного члена о(1)")
         print("5. Выход")
