@@ -30,6 +30,37 @@ def avg_ae_steps_counter(n: int, samples=5000000) -> float: # функция avg
         total_steps += ae_steps_counter(a,b)
     return total_steps / samples
 
+def run_visualization_without_monte():
+    theoretical_slope = (12 * np.log(2)) / (np.pi ** 2)  # константа наклона по теории
+    n_values = sorted([n*10 ** i for n in [1,2,4,6,8] for i in range(1, 4)])  # список n от 10^3 до 10^10
+    average_steps = np.array([nomonte_ae_steps_counter(n) for n in n_values])  # расчет ср. шагов для каждого n
+    ln_n = np.log(np.array(n_values))  # перевод n в натуральный логарифм для регрессии
+    slope, intercept = np.polyfit(ln_n, average_steps, 1)  # расчет коэф. линейной регрессии
+    theoretical_steps = theoretical_slope * ln_n + 0.3543382667   # расчет прямой по теории
+    # theory_val = theoretical_slope * ln_n  # теория без подгонки intercept
+    # print(f"\n{'№':<4} {'n':<12} {'T(n) эксп.':<14} {'T(n) теор.':<14} {'Абс. погр.':<14} {'Отн. погр.'}")
+    # print("-" * 70)
+    # for i, (n, exp, theor) in enumerate(zip(n_values, average_steps, theory_val), 1):
+    #     abs_err = abs(exp - theor)
+    #     rel_err = (abs_err / theor) * 100
+    #     print(f"{i:<4} {n:<12} {exp:<14.4f} {theor:<14.4f} {abs_err:<14.4f} {rel_err:.4f}%")
+    diff = average_steps - theoretical_steps  # вычисление разности (ошибки)
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6), sharex=True, gridspec_kw={'height_ratios': [2, 1]})
+    ax1.plot(n_values, average_steps, 'ro', label='Эксперимент', markersize=5)
+    ax1.plot(n_values, theoretical_steps, color='black', alpha=0.5, label='Теория')
+    ax1.set_ylabel('Среднее число шагов $T(n)$')
+    ax1.grid(True, linestyle=':', alpha=0.6)
+    ax1.legend()
+    ax2.vlines(n_values, 0, diff, color='blue', alpha=0.3)
+    ax2.plot(n_values, diff, 'bo', markersize=4, label='Отклонение (Эксп - Теор)')
+    ax2.set_ylabel(r'Разница $\Delta$')
+    ax2.grid(True, linestyle=':', alpha=0.6)
+    ax2.legend()
+    ax2.set_xscale('log')
+    ax2.set_xlabel('Параметр $n$ (логарифмическая шкала)')
+    plt.tight_layout()
+    plt.show()
+
 
 def run_visualization():
     theoretical_slope = (12 * np.log(2)) / (np.pi ** 2)  # константа наклона по теории
@@ -37,7 +68,7 @@ def run_visualization():
     average_steps = np.array([avg_ae_steps_counter(n) for n in n_values])  # расчет ср. шагов для каждого n
     ln_n = np.log(np.array(n_values))  # перевод n в натуральный логарифм для регрессии
     slope, intercept = np.polyfit(ln_n, average_steps, 1)  # расчет коэф. линейной регрессии
-    theoretical_steps = theoretical_slope * ln_n + intercept  # расчет прямой по теории
+    theoretical_steps = theoretical_slope * ln_n + 0.3543382667   # расчет прямой по теории
     # theory_val = theoretical_slope * ln_n  # теория без подгонки intercept
     # print(f"\n{'№':<4} {'n':<12} {'T(n) эксп.':<14} {'T(n) теор.':<14} {'Абс. погр.':<14} {'Отн. погр.'}")
     # print("-" * 70)
@@ -70,10 +101,11 @@ def main_menu(): # функция main_menu исполняет роль глав
         print("   АНАЛИЗ АЛГОРИТМА ЕВКЛИДА")
         print("=" * 30)
         print("1. Рассчитать среднее для конкретного n") # данные элементы являются декоративными
-        print("2. Построить график (сравнение с теорией)")
-        print("3. Построить график остаточного члена о(1)")
-        print("4. Выход")
-        choice = input("\nВыберите действие (1-4): ") # в переменной choice находится номер опции, выбранной пользователем
+        print("2. Построить график T(n) от ln(n) (с использованием метода Монте-Карло")
+        print("3. Построить график T(n) от ln(n) (с использованием метода полного перебора)")
+        print("4. Построить график остаточного члена о(1)")
+        print("5. Выход")
+        choice = input("\nВыберите действие (1-5): ") # в переменной choice находится номер опции, выбранной пользователем
         if choice == '1': # в данном блоке находится подсчёт среднего количества шагов алгоритма Евклида
             try: # блок try используется для обработки ошибок
                 user_n = int(input("Введите n: ")) # переменная получает на вход n от пользователя
@@ -92,15 +124,23 @@ def main_menu(): # функция main_menu исполняет роль глав
         elif choice == '2': # в данном блоке находится визуализация графика T(n) от ln(n) для экспериментального значения
             print("\nГенерация графика... Пожалуйста, подождите.")
             run_visualization()
-        elif choice == "3": # в данном блоке просчитывается практическое значение C, далее просчитывается о(1) и строится график
+        elif choice == '3':
+            print("\nГенерация графика... Пожалуйста, подождите.")
+            run_visualization_without_monte()
+        elif choice == "4": # в данном блоке просчитывается практическое значение C, далее просчитывается о(1) и строится график
             choice_mc_method = input("Построить график о(1) с использованием метода Монте-Карло? (ускорит работу и позволит увеличить n, однако график неточен) (y/n) ") # данная переменная хранит в себе выбор пользователя об использовании метода Монте-Карло
             pi = np.pi
             ln2 = np.log(2)                     # в данные переменные помещаются различные математическое постоянные
-            gamma = 0.5772156649015328  # Постоянная Эйлера-Маскерони
-            zeta_prime_2 = -0.93754825431 # значение производной дзета-функции Римана в точке 2
-            c_porter = (6 * ln2 / pi ** 2) * (3 * ln2 + 4 * gamma - (24 / pi ** 2) * zeta_prime_2 - 2) - 0.5 # просчитывается значение константы Портера с помощью производной дзета-функции Римана
+            # gamma = 0.5772156649015328  # Постоянная Эйлера-Маскерони
+            # zeta_prime_2 = -0.93754825431 # значение производной дзета-функции Римана в точке 2
+            # c_porter = (6 * ln2 / pi ** 2) * (3 * ln2 + 4 * gamma - (24 / pi ** 2) * zeta_prime_2 - 2) - 0.5 # просчитывается значение константы Портера с помощью производной дзета-функции Римана
             theoretical_slope = (12 * ln2) / (pi ** 2) # просчитывается коэффициент при ln(n) в формуле Хайльбронна-Диксона
-            c_theory = theoretical_slope*(math.log(4/3) - gamma + zeta_prime_2/(math.pi**2/6) - 0.5) + c_porter # просчитывается константа C по формуле
+            # sum_in_parentheses = math.log(4/3) - gamma + zeta_prime_2/(math.pi**2/6) - 0.5
+            c_theory = 0.3543382667
+            # print(c_theory)
+            # print(f"theoretical: {theoretical_slope}")
+            # print(sum_in_parentheses)
+            # print(c_porter)# просчитывается константа C по формуле
             error_array = [] # объявляется массив остаточных членов o(1) для метода без использования Монте-Карло
             error_array_mc = [] # обьявляется массив остаточных членов о(1) для метода с использованием Монте-Карло
             if choice_mc_method in "NnТт0": # обрабатывается отрицательный ответ на вопрос об использовании метода Монте-Карло с учётом опечаток
@@ -143,9 +183,10 @@ def main_menu(): # функция main_menu исполняет роль глав
             else: # обрабатывается ошибка ввода с выходом в главное меню
                 print("Ошибка ввода опции! Возврат к главному меню...\n")
                 continue
-        elif choice == '4': # в данном блоке обрабатывается конец работы программы
+        elif choice == '5': # в данном блоке обрабатывается конец работы программы
             print("Программа завершена.")
             break
+
         else:
             print("\n[Ошибка] Неверный ввод. Попробуйте еще раз.") # блок else обрабатывает неверный ввод номера операции
 
